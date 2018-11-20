@@ -1,0 +1,46 @@
+#!/bin/bash
+
+### Set the job name
+#SBATCH -J st3-50
+#SBATCH -o st3-50.out
+#SBATCH -e st3-50.err 
+
+#SBATCH -p hsw_v100_32g
+
+### Specify the number of cpus for your job.
+#SBATCH -N 1                 # total number of nodes
+#SBATCH --exclusive
+
+
+
+module load cuda
+module load pgi
+
+
+export GECKO_CONFIG_FILE=/home/mghane/gecko-rodinia/config/gecko_host_3.conf
+export GECKO_POLICY=percentage:[50.00,16.67,16.67,16.67]
+
+cd /home/mghane/gecko-microbench/OLD//stencil
+
+rm -f stencil-percentage-timing-gpu-3-host-50-OLD.txt
+
+sh run &>> stencil-percentage-timing-gpu-3-host-50-OLD.txt
+sleep 2
+
+
+sh run &>> stencil-percentage-timing-gpu-3-host-50-OLD.txt
+sleep 2
+
+
+sh run &>> stencil-percentage-timing-gpu-3-host-50-OLD.txt
+sleep 2
+
+
+sh run &>> stencil-percentage-timing-gpu-3-host-50-OLD.txt
+sleep 2
+
+
+sh run &>> stencil-percentage-timing-gpu-3-host-50-OLD.txt
+sleep 2
+
+

@@ -1,0 +1,46 @@
+#!/bin/bash
+
+### Set the job name
+#SBATCH -J ve3-20
+#SBATCH -o ve3-20.out
+#SBATCH -e ve3-20.err 
+
+#SBATCH -p hsw_v100_32g
+
+### Specify the number of cpus for your job.
+#SBATCH -N 1                 # total number of nodes
+#SBATCH --exclusive
+
+
+
+module load cuda
+module load pgi
+
+
+export GECKO_CONFIG_FILE=/home/mghane/gecko-rodinia/config/gecko_host_3.conf
+export GECKO_POLICY=percentage:[20.00,26.67,26.67,26.67]
+
+cd /home/mghane/gecko-microbench/OLD//vector_add
+
+rm -f vector_add-percentage-timing-gpu-3-host-20-OLD.txt
+
+sh run &>> vector_add-percentage-timing-gpu-3-host-20-OLD.txt
+sleep 2
+
+
+sh run &>> vector_add-percentage-timing-gpu-3-host-20-OLD.txt
+sleep 2
+
+
+sh run &>> vector_add-percentage-timing-gpu-3-host-20-OLD.txt
+sleep 2
+
+
+sh run &>> vector_add-percentage-timing-gpu-3-host-20-OLD.txt
+sleep 2
+
+
+sh run &>> vector_add-percentage-timing-gpu-3-host-20-OLD.txt
+sleep 2
+
+

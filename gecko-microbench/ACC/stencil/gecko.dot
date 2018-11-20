@@ -1,0 +1,20 @@
+digraph Gecko {
+"LocG4"  [shape=box];
+"LocG"  [shape=box];
+"LocG" -> "LocG4";
+"LocG3"  [shape=box];
+"LocG"  [shape=box];
+"LocG" -> "LocG3";
+"LocG"  [shape=box];
+"LocB"  [shape=box];
+"LocB" -> "LocG";
+"LocG2"  [shape=box];
+"LocG"  [shape=box];
+"LocG" -> "LocG2";
+"LocB"  [shape=box];
+"LocA"  [shape=box];
+"LocA" -> "LocB";
+"LocG1"  [shape=box];
+"LocG"  [shape=box];
+"LocG" -> "LocG1";
+}

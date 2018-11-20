@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "prun-gpu-trace.py", line 25, in <module>
+    os.chdir(main_folder+app_name)
+OSError: [Errno 2] No such file or directory: '/home/mghane/gecko-microbench/ACCvector_add'

@@ -1,0 +1,43 @@
+OLD;vector_add: 20 200000000;1;302716.35us
+OLD;vector_add: 20 200000000;2;142168.76us
+OLD;vector_add: 20 200000000;3;112563.65us
+OLD;vector_add: 20 200000000;4;109552.22us
+
+OLD;stencil: 20 2048;1;14382.84us
+OLD;stencil: 20 2048;2;320606.95us
+OLD;stencil: 20 2048;3;641976.83us
+OLD;stencil: 20 2048;4;932710.89us
+
+
+
+
+
+NEW;vector_add: 20 200000000;1;299778.60us
+NEW;vector_add: 20 200000000;2;122162.18us
+NEW;vector_add: 20 200000000;3;77466.82us
+NEW;vector_add: 20 200000000;4;60663.29us
+
+
+NEW;stencil: 20 2048;1;30488253.12us
+NEW;stencil: 20 2048;2;15271880.87us
+NEW;stencil: 20 2048;3;10200629.00us
+NEW;stencil: 20 2048;4;7680707.93us
+
+
+
+
+
+ACC;vector_add: 20 200000000;1;1251362.06us
+
+ACC;stencil: 20 2048;1;15029.91us
+
+
+
+ACC_MANAGED;vector_add: 20 200000000;1;360488.64us
+
+ACC_MANAGED;stencil: 20 2048;1;18985.03us
+
+
+
+
+

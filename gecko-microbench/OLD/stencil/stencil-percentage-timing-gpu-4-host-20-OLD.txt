@@ -1,0 +1,5 @@
+Time: 994795.80us
+Time: 965162.04us
+Time: 1012823.82us
+Time: 986217.98us
+Time: 990675.21us
