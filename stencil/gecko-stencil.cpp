@@ -3,11 +3,21 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
+#include <chrono>
 
 using namespace std;
 
-static char *exec_loc = "LocB";
-static char *exec_pol = "static";
+
+#ifdef USE_DOUBLE
+#define real double
+#else
+#define real float
+#endif
+
+
+
+static char *exec_loc = "LocH";
 
 
 #define dval(a, nCols, i, j)    a[(i)*(nCols) + (j)]
@@ -26,23 +36,20 @@ ApplyDoubleStencil( void* vdata,
                     void (*preIterBlockCB)(void* cbData),
                     void* cbData )
 {
-    double* __restrict__ data = (double*)vdata;
-    double wCenter = *(double*)vwCenter;
-    double wCardinal = *(double*)vwCardinal;
-    double wDiagonal = *(double*)vwDiagonal;
+    real* __restrict__ data = (real*)vdata;
+    real wCenter = *(real*)vwCenter;
+    real wCardinal = *(real*)vwCardinal;
+    real wDiagonal = *(real*)vwDiagonal;
 
 
     /*
-     * Our algorithm is double buffering.  We need to allocate a buffer
+     * Our algorithm is real buffering.  We need to allocate a buffer
      * on the device of the same size as the input data.  We use
      * OpenACC's create clause on a data region to accomplish this.
      */
-    // double* __restrict__ other = (double*)calloc( nRows * nPaddedCols, sizeof(double) );
-    double* __restrict__ other;
-	#pragma gecko memory allocate(other[0:nRows*nPaddedCols]) type(double) location(exec_loc) 
-
-    // #pragma acc data copyin(other[0:nRows*nPaddedCols]) deviceptr(data)
-    {
+    // real* __restrict__ other = (real*)calloc( nRows * nPaddedCols, sizeof(real) );
+    real* __restrict__ other;
+	#pragma gecko memory allocate(other[0:nRows*nPaddedCols]) type(real) location(exec_loc)
 
     /* Perform the stencil operation for the desired number of iterations.
      * To support the necessary halo exchanges in the truly parallel version,
@@ -81,23 +88,22 @@ ApplyDoubleStencil( void* vdata,
             unsigned int nRows_1 = nRows - 1;
 
             // Launching following kernel at the selected location
-			#pragma gecko region at(exec_loc) exec_pol(exec_pol) variable_list(other,data)
-            #pragma acc parallel loop collapse(2) independent present(other,data)
+			#pragma gecko region exec_pol("runtime") variable_list(other,data) collapse(2) independent
             for(unsigned int i=1; i<nRows_1; i++)
             {
                 for( unsigned int j = 1; j < (nPaddedCols-1); j++ )
                 {
-                    double oldCenterValue = dval(data, nPaddedCols, i, j);
-                    double oldNSEWValues = dval(data, nPaddedCols, i - 1, j ) +
+                    real oldCenterValue = dval(data, nPaddedCols, i, j);
+                    real oldNSEWValues = dval(data, nPaddedCols, i - 1, j ) +
                                             dval(data, nPaddedCols, i + 1, j ) +
                                             dval(data, nPaddedCols, i, j - 1 ) +
                                             dval(data, nPaddedCols, i, j + 1 );
-                    double oldDiagonalValues = dval(data, nPaddedCols, i - 1, j - 1) +
+                    real oldDiagonalValues = dval(data, nPaddedCols, i - 1, j - 1) +
                                                 dval(data, nPaddedCols, i - 1, j + 1) +
                                                 dval(data, nPaddedCols, i + 1, j - 1) +
                                                 dval(data, nPaddedCols, i + 1, j + 1);
 
-                    double newVal = wCenter * oldCenterValue +
+                    real newVal = wCenter * oldCenterValue +
                                     wCardinal * oldNSEWValues +
                                     wDiagonal * oldDiagonalValues;
                     dval(other, nPaddedCols, i, j ) = newVal;
@@ -112,8 +118,7 @@ ApplyDoubleStencil( void* vdata,
              */
 
             // Launching following kernel at the selected location
-			#pragma gecko region at(exec_loc) exec_pol(exec_pol) variable_list(other,data)
-            #pragma acc parallel loop collapse(2) independent present(other,data)
+			#pragma gecko region exec_pol("runtime") variable_list(other,data) collapse(2) independent
             for( unsigned int i = 1; i < nRows_1; i++ )
             {
                 for( unsigned int j = 1; j < (nCols - 1); j++ )
@@ -122,14 +127,11 @@ ApplyDoubleStencil( void* vdata,
                 }
             }
 			#pragma gecko region end
-
-			#pragma gecko region pause at(exec_loc) 
+			#pragma gecko region pause at("LocA") 
         }
 
     }
-    } /* end of OpenACC data region for "other" array */
 
-    // free(other);
 	#pragma gecko memory free(other)
 }
 
@@ -138,25 +140,25 @@ ApplyDoubleStencil( void* vdata,
 int main(int argc, char const *argv[]) {
 
 	if(argc < 3) {
-		printf("Usage: %s <iter_count> <elements_count>\n", argv[0]);
+		printf("Usage: %s <elements_count> <iter_count>  \n", argv[0]);
 		return -1;
 	}
 
-	#pragma gecko config env
+	#pragma gecko config file("gecko.conf")
 
-	int iter_count = atoi(argv[1]);
+	int iter_count = atoi(argv[2]);
 
-	int N = atoi(argv[2]);
+	int N = atoi(argv[1]);
 
-	double *X;
-	double w = 0.5;
+	real *X;
+	real w = 0.5;
 
 	vector<double> v_time;
 
-	#pragma gecko memory allocate(X[0:N*N]) type(double) location(exec_loc) 
+	#pragma gecko memory allocate(X[0:N*N]) type(real) location(exec_loc) 
 
-	double time;
-	time = omp_get_wtime();
+    std::chrono::high_resolution_clock::time_point t1, t2;
+    t1 = std::chrono::high_resolution_clock::now();
 
 	ApplyDoubleStencil( X,
 	                N,
@@ -170,15 +172,16 @@ int main(int argc, char const *argv[]) {
 	                NULL,
 	                NULL);
 	
-	time = omp_get_wtime() - time;
-	time *= 1E6;
+    t2 = std::chrono::high_resolution_clock::now();
 
-	v_time.push_back(time);
+    double runtime = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+
+    v_time.push_back(runtime);
 
 	#pragma gecko memory free(X)
 
 	double sum = std::accumulate(v_time.begin(), v_time.end(), 0.0);
-	printf("Time: %.2fus\n", sum);
+	printf("Time: %.2fus\n", sum/v_time.size());
 
 	return 0;
 }
