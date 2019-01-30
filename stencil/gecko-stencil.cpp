@@ -88,9 +88,10 @@ ApplyDoubleStencil( void* vdata,
             unsigned int nRows_1 = nRows - 1;
 
             // Launching following kernel at the selected location
-			#pragma gecko region exec_pol("runtime") variable_list(other,data) collapse(2) independent
+			#pragma gecko region exec_pol("runtime") variable_list(other,data) independent gang 
             for(unsigned int i=1; i<nRows_1; i++)
             {
+		#pragma acc loop vector independent
                 for( unsigned int j = 1; j < (nPaddedCols-1); j++ )
                 {
                     real oldCenterValue = dval(data, nPaddedCols, i, j);
@@ -118,9 +119,10 @@ ApplyDoubleStencil( void* vdata,
              */
 
             // Launching following kernel at the selected location
-			#pragma gecko region exec_pol("runtime") variable_list(other,data) collapse(2) independent
+			#pragma gecko region exec_pol("runtime") variable_list(other,data) independent gang 
             for( unsigned int i = 1; i < nRows_1; i++ )
             {
+                #pragma acc loop vector independent
                 for( unsigned int j = 1; j < (nCols - 1); j++ )
                 {
                     dval(data, nPaddedCols, i, j) = dval(other, nPaddedCols, i, j);
@@ -181,7 +183,7 @@ int main(int argc, char const *argv[]) {
 	#pragma gecko memory free(X)
 
 	double sum = std::accumulate(v_time.begin(), v_time.end(), 0.0);
-	printf("Time: %.2fus\n", sum/v_time.size());
+	printf("Time: %.2fs\n", sum/v_time.size());
 
 	return 0;
 }

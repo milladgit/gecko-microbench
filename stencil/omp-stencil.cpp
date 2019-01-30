@@ -175,7 +175,7 @@ int main(int argc, char const *argv[]) {
 	free(X);
 
 	double sum = std::accumulate(v_time.begin(), v_time.end(), 0.0);
-	printf("Time: %.2fs\n", sum);
+	printf("Time: %.2fs\n", sum/v_time.size());
 
 	return 0;
 }

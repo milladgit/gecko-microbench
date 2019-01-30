@@ -45,10 +45,10 @@ static void simple_gemm_no_acc(int n, real alpha, real *A, real *B,
 static void simple_gemm_acc(int n, real alpha, real *A, real *B,
                          real beta, real *C)
 {
-    #pragma gecko region exec_pol("runtime") variable_list(A,B,C) gang independent
+    #pragma gecko region exec_pol("runtime") variable_list(A,B,C) gang vector independent
     for (int i = 0; i < n; ++i)
     {
-        #pragma acc loop vector independent
+        #pragma acc loop independent
         for (int j = 0; j < n; ++j)
         {
             real prod = 0;
@@ -63,7 +63,7 @@ static void simple_gemm_acc(int n, real alpha, real *A, real *B,
         }
     }
     #pragma gecko region end
-    #pragma gecko region pause at("LocA") 
+//    #pragma gecko region pause at("LocA") 
 
 }
 
@@ -133,8 +133,9 @@ int main(int argc, char **argv)
     #pragma gecko memory copy from(h_B[0:n2]) to(d_B[0:n2])
 
 
-    /* Performs operation using plain C code */
-    simple_gemm_no_acc(N, alpha, h_A, h_B, beta, h_C_ref);
+    if(num_times == 1)
+	    /* Performs operation using plain C code */
+	    simple_gemm_no_acc(N, alpha, h_A, h_B, beta, h_C_ref);
 
     auto start = std::chrono::steady_clock::now();
 
